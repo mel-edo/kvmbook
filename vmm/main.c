@@ -6,6 +6,23 @@
 #include <sys/mman.h>
 #include <linux/kvm.h>
 
+void dump_regs(int vcpu_fd) {
+    struct kvm_regs regs;
+    struct kvm_sregs sregs;
+
+    if (ioctl(vcpu_fd, KVM_GET_REGS, &regs) < 0) { perror("KVM_GET_REGS"); return; }
+    if (ioctl(vcpu_fd, KVM_GET_SREGS, &sregs) < 0) { perror("KVM_GET_SREGS"); return; }
+
+    printf("RIP: %016llx RFLAGS: %016llx\n", regs.rip, regs.rflags);
+    printf("RAX: %016llx RBX: %016llx RCX: %016llx RDX: %016llx\n",
+            regs.rax, regs.rbx, regs.rcx, regs.rdx);
+    printf("RSI: %016llx RDI: %016llx RSP: %016llx RBP: %016llx\n",
+            regs.rsi, regs.rdi, regs.rsp, regs.rbp);
+    printf("CS: base=%016llx selectro=%04x\n", sregs.cs.base, sregs.cs.selector);
+    printf("CR0: %016llx CR3: %016llx CR4: %016llx\n",
+            sregs.cr0, sregs.cr3, sregs.cr4);
+}
+
 int main(void) {
     int kvm_fd, vm_fd, vcpu_fd;
 
@@ -75,6 +92,7 @@ int main(void) {
         switch (run->exit_reason) {
             case KVM_EXIT_HLT:
                 printf("KVM_EXIT_HLT - guest executed HLT, we're done\n");
+                dump_regs(vcpu_fd);
                 goto done;
 
             case KVM_EXIT_IO:
