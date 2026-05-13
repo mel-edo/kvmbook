@@ -44,6 +44,60 @@ int main(void) {
         perror("KVM_SET_USER_MEMORY_REGION"); return 1;
     }
 
+    // Step 6: get the mmap size KVM needs for the run struct, then map it
+    int mmap_size = ioctl(kvm_fd, KVM_GET_VCPU_MMAP_SIZE, 0);
+    if (mmap_size < 0) { perror("KVM_GET_VCPU_MMAP_SIZE"); return 1; }
+
+    struct kvm_run *run = mmap(NULL, mmap_size,
+                            PROT_READ | PROT_WRITE,
+                            MAP_SHARED,
+                            vcpu_fd, 0);  // mmap on vcpu_fd, not /dev/kvm
+    if (run == MAP_FAILED) { perror("mmap kvm_run"); return 1; }
+
+    // Step 7: fix up CS so the guest executes at physical address 0x0
+    struct kvm_sregs sregs;
+    if (ioctl(vcpu_fd, KVM_GET_SREGS, &sregs) < 0) { perror("KVM_GET_SREGS"); return 1; }
+    sregs.cs.base = 0;
+    sregs.cs.selector = 0;
+    if (ioctl(vcpu_fd, KVM_SET_SREGS, &sregs) < 0) { perror("KVM_SET_SREGS"); return 1; }
+
+    // Step 8: set RIP to 0 -> combined with cs.base=0, guest starts at physical 0x0
+    struct kvm_regs regs = {
+        .rip = 0,
+        .rflags = 0x2,  // bit 1 is always required to be set by the x86 spec
+    };
+    if (ioctl(vcpu_fd, KVM_SET_REGS, &regs) < 0) { perror("KVM_SET_REGS"); return 1; }
+
+    // Step 9: run the vcpu and handle exits
+    while (1) {
+        if (ioctl(vcpu_fd, KVM_RUN, 0) < 0) { perror("KVM_RUN"); return 1; }
+
+        switch (run->exit_reason) {
+            case KVM_EXIT_HLT:
+                printf("KVM_EXIT_HLT - guest executed HLT, we're done\n");
+                goto done;
+
+            case KVM_EXIT_IO:
+                printf("KVM_EXIT_IO (unexpected this wekk)\n");
+                goto done;
+            
+            case KVM_EXIT_FAIL_ENTRY:
+                printf("KVM_EXIT_FAIL_ENTRY: hardware_entry_failure_reason = 0x%llx\n",
+                        run->fail_entry.hardware_entry_failure_reason);
+                goto done;
+
+            case KVM_EXIT_INTERNAL_ERROR:
+            printf("KVM_EXIT_INTERNAL_ERROR: suberror = 0x%x\n",
+                    run->internal.suberror);
+                goto done;
+
+            default:
+                printf("unexpected exit case: %d\n", run->exit_reason);
+                goto done;
+        }
+    }
+    done:
+
     printf("kvm_fd=%d vm_fd=%d vcpu_fd=%d\n", kvm_fd, vm_fd, vcpu_fd);
 
     close(vcpu_fd);
