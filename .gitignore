@@ -1,1 +1,2 @@
 vmm/main
+guest/*.bin
