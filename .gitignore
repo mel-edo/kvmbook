@@ -1,3 +1,5 @@
 vmm/main
+vmm/vmm
 guest/*.bin
 book/book/
+*.o
