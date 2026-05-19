@@ -4,19 +4,16 @@
   - [What is a Hypervisor](ch1-kvm-basics/what-is-a-hypervisor.md)
   - [The KVM ioctl API](ch1-kvm-basics/kvm-ioctl-api.md)
   - [VM Exits](ch1-kvm-basics/vm-exits.md)
-  - [Code Walkthrough](ch1-kvm-basics/walkthrough.md)
 
 - [Chapter 2: Memory](ch2-memory/README.md)
   - [x86 Memory Model](ch2-memory/x86-memory-model.md)
   - [Real, Protected, and Long Mode](ch2-memory/real-protected-long-mode.md)
   - [KVM Memory Slots](ch2-memory/kvm-memory-slots.md)
-  - [Code Walkthrough](ch2-memory/walkthrough.md)
 
 - [Chapter 3: Serial Port](ch3-serial/README.md)
   - [I/O Port Emulation](ch3-serial/io-port-emulation.md)
   - [KVM_EXIT_IO](ch3-serial/kvm-exit-io.md)
   - [Why Serial](ch3-serial/why-serial.md)
-  - [Code Walkthrough](ch3-serial/walkthrough.md)
 
 - [Chapter 4: Interrupts](ch4-interrupts/README.md)
   - [x86 Interrupt Model](ch4-interrupts/x86-interrupt-model.md)
@@ -24,7 +21,6 @@
   - [APIC Basics](ch4-interrupts/apic-basics.md)
   - [Injecting Interrupts](ch4-interrupts/injecting-interrupts.md)
   - [Triple Faults](ch4-interrupts/triple-faults.md)
-  - [Code Walkthrough](ch4-interrupts/walkthrough.md)
 
 - [Chapter 5: virtio-blk](ch5-virtio-blk/README.md)
   - [What is virtio](ch5-virtio-blk/what-is-virtio.md)
@@ -32,7 +28,6 @@
   - [Guest and Host Memory Sharing](ch5-virtio-blk/guest-host-memory-sharing.md)
   - [VMM Implementation](ch5-virtio-blk/vmm-implementation.md)
   - [Guest Driver](ch5-virtio-blk/guest-driver.md)
-  - [Code Walkthrough](ch5-virtio-blk/walkthrough.md)
 
 - [Chapter 6: Wrapup](ch6-wrapup/README.md)
   - [Going Production Grade](ch6-wrapup/production-grade.md)
