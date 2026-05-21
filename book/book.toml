@@ -1,8 +1,8 @@
 [book]
 title = "kvmbook"
-authors = ["your name", "friend's name"]
+authors = ["meledo", "Sourav"]
 language = "en"
 src = "src"
 
 [output.html]
-git-repository-url = "https://github.com/yourusername/kvmbook"
+git-repository-url = "https://github.com/mel-edo/kvmbook"
