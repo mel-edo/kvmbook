@@ -4,7 +4,7 @@ A VMM's job is to create and control a virtual machine. Specifically it's respon
 
 **Memory** - It allocates a chunk of RAM from the host and tells KVM that this is the guest's physical memory. The guest thinks it has real RAM but it's just a big buffer in your process.
 
-**CPU** - It creates virtual CPUs, sets their initial register state and runs them. If the guest does something the real hardware can't or shouldn't handle alone (reading from a device, executing a HLT[1]), the vCPU stops and hands control back to the VMM. The VMM handles this and resumes the guest. This back and forth is the core loop of a VMM.
+**CPU** - It creates virtual CPUs, sets their initial register state and runs them. If the guest does something the real hardware can't or shouldn't handle alone (reading from a device, executing a HLT), the vCPU stops and hands control back to the VMM. The VMM handles this and resumes the guest. This back and forth is the core loop of a VMM.
 
 > HLT is an x86 instruction that tells the CPU to stop executing until an interrupt arrives. It's the simplest guest event we can catch when we begin coding up our VMM.
 
