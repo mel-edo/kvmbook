@@ -12,5 +12,7 @@ typedef struct {
 
 int vcpu_init(VM *vm, VCPU *vcpu);
 void vcpu_cleanup(VCPU *vcpu);
+int vcpu_set_registers(VCPU *vcpu);
+int vcpu_run(VCPU *vcpu);
 
 #endif
