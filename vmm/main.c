@@ -8,23 +8,6 @@ int main(void) {
     VCPU vcpu;
 
     if (vm_init(&vm) < 0) return 1;
-
-    // Load guest binary at 0x7C00
-    FILE *f = fopen("guest/boot.bin", "rb");
-    if (!f) {
-        perror("Failed to open guest/boot.bin");
-        vm_cleanup(&vm);
-        return 1;
-    }
-
-    // Cast vm.mem to byte pointer, add 0x7C00 and read max 512 bytes
-    size_t read_bytes = fread((uint8_t *)vm.mem + 0x7C00, 1, 512, f);
-    printf("Loaded %zu bytes into guest memory at 0x7C00\n", read_bytes);
-    fclose(f);
-
-    printf("VM initialized, %d MB guest RAM at host vaddr %p\n",
-            MEM_SIZE / (1024 * 1024), vm.mem);
-
     // Initialize the vCPU
     if (vcpu_init(&vm, &vcpu) < 0) {
         vm_cleanup(&vm);
@@ -32,6 +15,15 @@ int main(void) {
     }
 
     printf("vCPU initialized successfully\n");
+    
+    printf("VM initialized, %d MB guest RAM at host vaddr %p\n",
+        MEM_SIZE / (1024 * 1024), vm.mem);
+        
+    if (vcpu_load_binary(&vcpu, "guest/boot.bin") < 0) {
+        vcpu_cleanup(&vcpu);
+        vm_cleanup(&vm);
+        return 1;
+    }
 
     // set initial x86 registers
     if (vcpu_set_registers(&vcpu) < 0) {

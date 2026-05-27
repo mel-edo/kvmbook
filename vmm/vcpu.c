@@ -42,6 +42,7 @@ int vcpu_set_registers(VCPU *vcpu) {
 
 int vcpu_init(VM *vm, VCPU *vcpu) {
     vcpu->vm = vm;
+    vcpu->vcpu_fd = -1;
 
     // Ask KVM to spawn a vCPU thread for this VM (0 is the vCPU ID)
     vcpu->vcpu_fd = ioctl(vm->vm_fd, KVM_CREATE_VCPU, 0);
@@ -77,12 +78,31 @@ void vcpu_cleanup(VCPU *vcpu) {
         }
     }
     
-    if (vcpu->vcpu_fd) {
+    if (vcpu->vcpu_fd >= 0) {
         close(vcpu->vcpu_fd);
     }
 }
 
-int vcpu_runn(VCPU *vcpu) {
+int vcpu_load_binary(VCPU *vcpu, const char *path) {
+    FILE *f = fopen(path, "rb");
+    if (!f) {
+        perror("Failed to open binary");
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    rewind(f);
+    
+    // Load guest binary at 0x7C00
+    // Cast vm->mem to byte pointer, add 0x7C00 and read max 512 bytes
+    size_t read_bytes = fread((uint8_t *)vcpu->vm->mem + 0x7C00, 1, size, f);
+    printf("Loaded %zu bytes into guest memory at 0x7C00\n", read_bytes);
+    fclose(f);
+    return 0;
+}
+
+int vcpu_run(VCPU *vcpu) {
     printf("Starting vCPU run loop...\n");
 
     while (1) {
@@ -106,7 +126,7 @@ int vcpu_runn(VCPU *vcpu) {
                 } else {
                     printf("KVM_EXIT_IO: Guest read from port 0x%x\n", vcpu->run->io.port);
                 }
-                // exit VMM for now
+                // exit VMM for now (we will fix this later)
                 return 0;
 
             case KVM_EXIT_FAIL_ENTRY:
