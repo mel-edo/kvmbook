@@ -15,5 +15,6 @@ void vcpu_cleanup(VCPU *vcpu);
 int vcpu_set_registers(VCPU *vcpu);
 int vcpu_run(VCPU *vcpu);
 int vcpu_load_binary(VCPU *vcpu, const char *path);
+void vcpu_dump_regs(VCPU *vcpu);
 
 #endif

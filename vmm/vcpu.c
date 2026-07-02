@@ -102,6 +102,18 @@ int vcpu_load_binary(VCPU *vcpu, const char *path) {
     return 0;
 }
 
+void vcpu_dump_regs(VCPU *vcpu) {
+    struct kvm_regs regs;
+    struct kvm_sregs sregs;
+
+    if (ioctl(vcpu->vcpu_fd, KVM_GET_REGS, &regs) < 0) { perror("KVM_GET_REGS"); return; }
+    if (ioctl(vcpu->vcpu_fd, KVM_GET_SREGS, &sregs) < 0) { perror("KVM_GET_SREGS"); return; }
+
+    printf("RIP: %016llx RFLAGS: %016llx\n", regs.rip, regs.rflags);
+    printf("CS: base=%016llx selector=%04x\n", sregs.cs.base, sregs.cs.selector);
+    printf("CR0: %016llx\n", sregs.cr0);
+}
+
 int vcpu_run(VCPU *vcpu) {
     printf("Starting vCPU run loop...\n");
 
@@ -117,6 +129,7 @@ int vcpu_run(VCPU *vcpu) {
             case KVM_EXIT_HLT:
                 // The guest executed the 'hlt' instruction
                 printf("KVM_EXIT_HLT: Guest executed HLT and halted\n");
+                vcpu_dump_regs(vcpu);
                 return 0;  // we treat this as a succesful clean exit for now
 
             case KVM_EXIT_IO:
